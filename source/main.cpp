@@ -54,35 +54,45 @@ void set_bit(LInt& val, uint8_t bit, bool value) {
 		val[bit/64] |= table[bit % 64];
 }
 
+void simplify(LInt& val) {
+	LInt v = val;
+	while (v.size() && !v.back())
+		v.erase(v.end() - 1);
+	val = v;
+}
 
-void add(LInt& t, Int value, uint8_t shift) {
-	//std::cout << "add value " << value << " with shift " << (int)shift << std::endl;
-	uint8_t c = 0;
-	//std::cout << std::bitset<64>(t[0]) << std::endl;
+/// Добавляет к t число value << shift
+void add(LInt& t, Int value, uint16_t shift) {
+	uint64_t c = 0;
 	for (size_t i = 0; i < 64; ++i) {
 		int s = get_bit(t, i + shift) + get_bit(value, i) + c;
-		if (s & table[0])
-			set_bit(t, i + shift, 1);
-		else
-			set_bit(t, i + shift, 0);
+		set_bit(t, i + shift, s & table[0]);
 		c = s >> 1;
-		//std::cout << t << std::endl;
-		//std::cout <<"c = " << (int)c << std::endl;
 	}
 	if (c) {
-		t[1] += c;
+		int i = 64;
+		while (c) {
+			int s = get_bit(t, i + shift) + c;
+			set_bit(t, i + shift, s & table[0]);
+			c = s >> 1;
+			++i;
+		}
 	}
 }
 
 
 LInt multiply(const LInt& a, const LInt& b) {
+	LInt a_ = a;
+	LInt b_ = b;
+	simplify(a_);
+	simplify(b_);
 	LInt res;
-	res.resize(a.size() + b.size());
+	res.resize(a_.size() + b_.size());
 	
-	for (size_t i = 0; i < b.size() * 64; ++i) {
-		if (get_bit(b, i)) {
-			for (size_t block = 0; block < a.size(); ++block)
-				add(res, a[block], i + block * 64);
+	for (size_t i = 0; i < b_.size() * 64; ++i) {
+		if (get_bit(b_, i)) {
+			for (size_t block = 0; block < a_.size(); ++block)
+				add(res, a_[block], i + block * 64);
 			//std::cout << "res = " << res << std::endl;		
 		}
 	}
@@ -113,6 +123,11 @@ int main(int argc, char* argv[]) {
 		int f;
 		ss >> f;
 		std::cout << factorial(f) << std::endl;
+	}
+	else {
+		for (size_t i = 0; i <= 50; ++i) {
+			std::cout << i << "! = " << factorial(i) << std::endl;
+		}
 	}
 
 	return 0;
