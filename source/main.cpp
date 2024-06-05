@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <bitset>
+#include <sstream>
 
 using Int = uint64_t;
 using LInt = std::vector<uint64_t>;
@@ -53,6 +54,7 @@ void set_bit(LInt& val, uint8_t bit, bool value) {
 		val[bit/64] |= table[bit % 64];
 }
 
+
 void add(LInt& t, Int value, uint8_t shift) {
 	//std::cout << "add value " << value << " with shift " << (int)shift << std::endl;
 	uint8_t c = 0;
@@ -95,21 +97,23 @@ LInt operator*(const LInt& a, const LInt& b) {
 
 LInt factorial(size_t n) {
 	if (n <= 1) {
-		auto res = LInt{ 1 };
-		std::cout << n << "! = " << res << std::endl;
-		return res;
+		return LInt{ 1 };
 	}
-	auto res =  factorial(n - 1) * LInt { n };
-	std::cout << n << "! = " << res << std::endl;
-	return res;
+	return factorial(n - 1) * LInt { n };
 }
 
 
-int main() {
-
+int main(int argc, char* argv[]) {
 	for (size_t i = 0; i < 64; ++i) {
 		table[i] = static_cast<Int>(1) << i;
 	}
-	std::cout << factorial(50) << std::endl;
+
+	if (argc == 2) {
+		std::stringstream ss(argv[1]);
+		int f;
+		ss >> f;
+		std::cout << factorial(f) << std::endl;
+	}
+
 	return 0;
 }
